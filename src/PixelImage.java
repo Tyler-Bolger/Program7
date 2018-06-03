@@ -105,4 +105,88 @@ public class PixelImage
   }
 
   // add a method to compute a new image given weighted averages
+
+  /** Generic method for 3x3 transformations
+   * Working for Gaussian, Unsharp. not working for Laplace or Edgy. (???)
+   * @param weight0 weight for center pixel RGB values
+   * @param weight1 weight for edge RGB values
+   * @param weight2 weight for corner RGB values
+   */
+  public void transformImage(int weight0, int weight1, int weight2) {
+    Pixel[][] data = this.getData();
+    int rows = data.length;
+    int cols = data[0].length;
+
+    for (int row = 1; row < rows - 1; row++) {
+      for (int col = 1; col < cols - 1; col++) {
+        // get center values
+        int centerRed = data[row][col].red;
+        int centerGreen = data[row][col].green;
+        int centerBlue = data[row][col].blue;
+
+        // get corner values
+        int cornersRed = data[row-1][col-1].red +
+                data[row-1][col+1].red +
+                data[row+1][col-1].red +
+                data[row+1][col+1].red;
+        int cornersGreen = data[row-1][col-1].green +
+                data[row-1][col+1].green +
+                data[row+1][col-1].green +
+                data[row+1][col+1].green;
+        int cornersBlue = data[row-1][col-1].blue +
+                data[row-1][col+1].blue +
+                data[row+1][col-1].blue +
+                data[row+1][col+1].blue;
+
+        // get edge values
+        int edgesRed = data[row-1][col].red +
+                data[row][col-1].red +
+                data[row+1][col].red +
+                data[row][col+1].red;
+        int edgesGreen = data[row-1][col].green +
+                data[row][col-1].green +
+                data[row+1][col].green +
+                data[row][col+1].green;
+        int edgesBlue = data[row-1][col].blue +
+                data[row][col-1].blue +
+                data[row+1][col].blue +
+                data[row][col+1].blue;
+
+        // get divisor for weighted average calculations
+        int totalWeight = weight0 + weight1 * 4 + weight2 * 4;
+        if (totalWeight == 0) {
+          totalWeight = 1;
+        }
+
+        // get weighted averages
+        int newRed = ((centerRed * weight0) + (edgesRed * weight1) + (cornersRed * weight2)) / totalWeight;
+        int newGreen = ((centerGreen * weight0) + (edgesGreen * weight1) + (cornersGreen * weight2)) / totalWeight;
+        int newBlue = ((centerBlue * weight0) + (edgesBlue * weight1) + (cornersBlue * weight2)) / totalWeight;
+
+        // check color values for validity
+        if (newRed < 0) {
+          newRed = 0;
+        } else if (newRed > 255) {
+          newRed = 255;
+        }
+        if (newGreen < 0) {
+          newGreen = 0;
+        } else if (newGreen > 255) {
+          newGreen = 255;
+        }
+        if (newBlue < 0) {
+          newBlue = 0;
+        } else if (newBlue > 255) {
+          newBlue = 255;
+        }
+
+        data[row][col].red = newRed;
+        data[row][col].green = newGreen;
+        data[row][col].blue = newBlue;
+      }
+    }
+
+    this.setData(data);
+  }
+
 }
