@@ -1,0 +1,7 @@
+.git
+*.class
+bin/*
+.classpath
+.project
+.settings
+.ds_store
